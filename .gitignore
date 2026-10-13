@@ -1,14 +1,17 @@
-# Secrets and local configuration
+# Secrets
 .env
+.env.*
+!.env.example
+
+# Python environments and cache
 .venv/
 venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
-.mypy_cache/
-.ruff_cache/
-# Generated vector index (rebuild with python ingest.py)
+
+# Generated vector index
 faiss_index/
-# Evaluation outputs can contain generated model responses; review before committing
-results/evaluation_results.csv
-results/evaluation_summary.json
+
+# Local outputs
+results/
