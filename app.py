@@ -27,7 +27,7 @@ st.markdown(f"""
 [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu {{display:none!important;visibility:hidden!important;}}
 [data-testid="stAppViewContainer"], [data-testid="stMain"], [data-testid="stMainBlockContainer"] {{background:{BG};}}
 .block-container {{max-width:1180px;padding-top: .25rem;padding-bottom:5rem}}
-/\* Hide Streamlit's floating top chrome; keep the app navbar fully visible. \*/
+/* Hide Streamlit's floating top chrome; keep the app navbar fully visible. */
 div[data-testid="stHorizontalBlock"]:has(.brand) {{
   position: sticky; top: 0; z-index: 9999;
   background: {BG}; padding: .65rem 0 .75rem;
@@ -36,17 +36,35 @@ div[data-testid="stHorizontalBlock"]:has(.brand) {{
 div[data-testid="stHorizontalBlock"]:has(.brand) [data-testid="column"] {{
   background: {BG};
 }}
-/\* Force the chat composer and its inner BaseWeb controls to match the beige theme. \*/
-[data-testid="stChatInput"], [data-testid="stChatInput"] > div,
-[data-testid="stChatInput"] textarea, [data-baseweb="textarea"],
-[data-baseweb="textarea"] > div, [data-testid="stBottom"],
-[data-testid="stBottom"] > div {{
-  background:{SURFACE}!important; color:{INK}!important; border-color:{BORDER}!important;
+/* Force the chat composer and its inner BaseWeb controls to match the beige theme. */
+/* Keep Streamlit's fixed chat composer area in the app's light theme. */
+[data-testid="stBottom"],
+[data-testid="stBottom"] > div,
+[data-testid="stBottomBlockContainer"],
+[data-testid="stBottomBlockContainer"] > div,
+[data-testid="stBottom"]::before,
+[data-testid="stBottomBlockContainer"]::before {{
+  background:{BG}!important;
+  background-color:{BG}!important;
+  box-shadow:none!important;
+}}
+[data-testid="stChatInput"],
+[data-testid="stChatInput"] > div,
+[data-testid="stChatInput"] form,
+[data-testid="stChatInput"] [data-baseweb="textarea"],
+[data-testid="stChatInput"] [data-baseweb="textarea"] > div,
+[data-testid="stChatInput"] textarea,
+[data-baseweb="textarea"],
+[data-baseweb="textarea"] > div {{
+  background:{SURFACE}!important;
+  background-color:{SURFACE}!important;
+  color:{INK}!important;
+  border-color:{BORDER}!important;
+  box-shadow:none!important;
 }}
 [data-testid="stChatInput"] textarea {{-webkit-text-fill-color:{INK}!important; caret-color:{INK}!important;}}
 [data-testid="stChatInput"] textarea::placeholder {{color:{MUTED}!important;opacity:1!important;}}
-[data-testid="stBottom"] {{background:{BG}!important;}}
-[data-testid="stBottom"]::before {{background:linear-gradient(transparent,{BG});}}
+[data-testid="stChatInput"] button {{background:{ALT}!important;color:{INK}!important;border-color:{BORDER}!important;}}
 h1,h2,h3 {{color:{INK};letter-spacing:-.02em}} h1,h2 {{font-family:'Playfair Display',Georgia,serif}}
 p,label,li {{color:{INK}}}
 .brand {{font-family:'Playfair Display',Georgia,serif;font-size:1.5rem;font-weight:700;color:{INK};padding-top:.25rem;white-space:nowrap;}}
@@ -69,13 +87,13 @@ div[data-testid="stChatInput"] {{background:{SURFACE};border-color:{BORDER};bord
 [data-testid="stExpander"] {{background:{SURFACE};border:1px solid {BORDER};border-radius:12px}}
 a {{color:{ACCENT_DARK}!important}} footer {{visibility:hidden}}
 @media(max-width:700px) {{.block-container{{padding-left:1rem;padding-right:1rem}}.brand{{font-size:1.2rem}}}}
-/\* compact top spacing \*/
+/* compact top spacing */
 [data-testid="stAppViewBlockContainer"] {{ padding-top: 0rem !important; }}
 [data-testid="stHeader"] {{ height: 0rem !important; min-height: 0rem !important; padding: 0 !important; margin: 0 !important; }}
-/\* compact layout below navbar \*/
+/* compact layout below navbar */
 [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] {{ margin-bottom: .15rem; }}
 [data-testid="stMainBlockContainer"] {{ padding-top: 0rem !important; }}
-/\* Collapse Streamlit divider whitespace — this is what caused the large gap \*/
+/* Collapse Streamlit divider whitespace — this is what caused the large gap */
 hr, [data-testid="stDivider"], [data-testid="stDivider"] > div {{
   margin: 0 !important;
   padding: 0 !important;
@@ -155,13 +173,17 @@ if page == "Home":
     if st.button("Chat with the assistant →", type="primary"):
         navigate("AI Assistant")
 elif page == "AI Assistant":
-    # Only initialize the retriever on the page that needs it.
-    try:
-        rag_retriever = load_retriever()
-        RETRIEVER_ERROR = None
-    except Exception as exc:
-        rag_retriever = None
-        RETRIEVER_ERROR = f"{type(exc).__name__}: {exc}"
+    # Initialize once per browser session, only when the assistant page is opened.
+    # Other page navigation and chat reruns reuse this session's retriever.
+    if "rag_retriever" not in st.session_state:
+        try:
+            st.session_state.rag_retriever = load_retriever()
+            st.session_state.retriever_error = None
+        except Exception as exc:
+            st.session_state.rag_retriever = None
+            st.session_state.retriever_error = f"{type(exc).__name__}: {exc}"
+    rag_retriever = st.session_state.rag_retriever
+    RETRIEVER_ERROR = st.session_state.retriever_error
 
     left, right = st.columns([4, 1], vertical_alignment="center")
     with left:
