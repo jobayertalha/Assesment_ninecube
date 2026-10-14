@@ -1,110 +1,148 @@
-# Business Knowledge Assistant — RAG Proof of Concept
+# SmartShop BD — Business Knowledge Assistant
 
-A small, source-aware question-answering application for a fictional Bangladeshi retailer, SmartShop BD. It retrieves relevant passages from a local Markdown knowledge base and uses an LLM to draft answers grounded in those passages. If retrieval is insufficient, it abstains rather than guessing.
+A source-aware Retrieval-Augmented Generation (RAG) proof of concept for a fictional Bangladeshi retailer. The app retrieves relevant passages from a small Markdown knowledge base and uses an LLM to draft answers grounded in that evidence. When the available information is insufficient, it is designed to say so rather than guess.
 
-> **Assessment data notice:** SmartShop BD, products, prices, phone number, email address and policies in this repository are synthetic examples created for the NineCube Digital technical assessment. They do not describe a real business.
+**Live demo:** [Open SmartShop BD](https://cahappnct7c5qsgfxt34uj3.streamlit.app/)  
+**Source code:** [GitHub repository](https://github.com/jobayertalha/Assesment_ninecube)
 
-## What is implemented
+> **Assessment data notice:** SmartShop BD, its products, prices, contact details, and policies are synthetic examples created for the NineCube Digital technical assessment. They do not describe a real business.
 
-- Markdown document ingestion and overlapping text chunking.
-- Sentence Transformers embeddings (`all-MiniLM-L6-v2` by default).
-- FAISS inner-product search over normalized vectors (cosine similarity).
-- Source metadata preserved per chunk and shown in the UI.
-- Groq API answer generation with evidence-only instructions and source filenames.
-- Basic ambiguity handling and retrieval-threshold fallback.
-- Streamlit interface with answers, sources and expandable retrieved passages.
-- Repeatable evaluation runner, CSV outputs and offline unit tests.
+## Features
 
-## Architecture
+- Loads and chunks Markdown knowledge-base documents with overlapping text chunks.
+- Generates local embeddings using Sentence Transformers (`all-MiniLM-L6-v2` by default).
+- Uses FAISS inner-product search over normalized vectors for cosine-similarity retrieval.
+- Preserves source metadata so answers can show the source filenames and retrieved passages.
+- Uses the Groq API for evidence-grounded answer generation.
+- Includes a retrieval-threshold fallback and basic ambiguity/abstention handling.
+- Provides a Streamlit interface with Home, AI Assistant, Evaluation, and Contact pages.
+- Includes a repeatable evaluation runner, CSV/JSON outputs, and offline unit tests.
+
+## How it works
 
 ```text
 Markdown knowledge base
         ↓
-Load + chunk + source metadata
+Load documents, chunk text, preserve source metadata
         ↓
-Sentence Transformers embeddings (normalized)
+Sentence Transformers embeddings (normalized vectors)
         ↓
-FAISS IndexFlatIP (cosine similarity)
+FAISS IndexFlatIP (cosine-similarity search)
         ↓
 Top-k retrieval + relevance threshold
         ↓
-Groq LLM (evidence-only prompt)
+Groq LLM with an evidence-only prompt
         ↓
 Answer with source filenames OR safe abstention
 ```
 
-The evaluation script calls the same retrieval and generation functions as the application. It reports retrieval hit rate, source-level Precision@k, simple reference-fact coverage, correct-abstention checks, and measured latency. Answer relevance and factual grounding are deliberately included as manual-review fields because automated string checks alone cannot reliably judge semantic correctness.
+The evaluation runner uses the same retrieval and generation functions as the application. It measures retrieval hit rate, source-level Precision@k, reference-fact coverage, automated abstention checks, and response latency. Answer relevance and factual grounding are included as **manual-review** fields because simple automated checks cannot reliably determine semantic correctness.
 
-## Technology choices
+## Technology stack
 
-| Technology | Why it is used |
+| Technology | Purpose |
 |---|---|
-| Python | Application and evaluation logic |
-| Streamlit | Minimal chat interface; no separate frontend/API server needed |
+| Python | Application, retrieval, ingestion, and evaluation logic |
+| Streamlit | Web interface without a separate frontend or API server |
 | Sentence Transformers | Local semantic embeddings |
-| FAISS | Lightweight vector similarity search for a small static knowledge base |
-| Groq API | LLM answer generation without training a model |
-| pytest | Basic deterministic unit tests |
+| FAISS | Vector similarity search over the indexed knowledge base |
+| Groq API | LLM answer generation |
+| pytest | Basic automated tests |
 
-LangChain, FastAPI, PostgreSQL, Docker, a hosted vector database and agent orchestration are intentionally omitted: they are not needed for this small proof of concept.
+LangChain, FastAPI, PostgreSQL, Docker, a hosted vector database, and agent orchestration are intentionally omitted. They are not necessary for this small proof of concept.
 
-## Run in GitHub Codespaces
+## Run locally or in GitHub Codespaces
 
-1. Upload/push this project folder to your GitHub repository and open it in Codespaces. The `.devcontainer` configuration uses Python 3.11 and installs `requirements.txt`.
-2. In the terminal, create your local environment file:
+### 1. Get the repository
 
-   ```bash
-   cp .env.example .env
-   ```
+```bash
+git clone https://github.com/jobayertalha/Assesment_ninecube.git
+cd Assesment_ninecube
+```
 
-3. Edit `.env` and set `GROQ_API_KEY` to a valid key. Never commit `.env` or expose the key in screenshots.
-4. Build the local index:
+Alternatively, open the repository in GitHub Codespaces. The `.devcontainer` configuration specifies Python 3.11 and installs the dependencies from `requirements.txt`.
 
-   ```bash
-   python ingest.py
-   ```
+### 2. Configure the API key
 
-   The first run downloads the embedding model and may take a few minutes. The index is generated under `faiss_index/` and is excluded from Git.
-5. Run the app:
+```bash
+cp .env.example .env
+```
 
-   ```bash
-   streamlit run app.py --server.address 0.0.0.0
-   ```
+Edit `.env` and set a valid `GROQ_API_KEY`. Never commit `.env`, paste the key into source code, or expose it in screenshots.
 
-   Open forwarded port 8501 in Codespaces.
+### 3. Build the knowledge-base index
+
+```bash
+python ingest.py
+```
+
+The first run downloads the embedding model and may take a few minutes. The generated index is stored in `faiss_index/`, which is excluded from Git.
+
+### 4. Start the app
+
+```bash
+streamlit run app.py
+```
+
+In Codespaces, open the forwarded port shown for Streamlit (usually port `8501`). If running in a container where external port forwarding requires binding to all interfaces, use:
+
+```bash
+streamlit run app.py --server.address 0.0.0.0
+```
 
 ## Run tests and evaluation
 
-Run deterministic unit tests (no Groq API key or embedding download required):
+### Unit tests
 
 ```bash
 pytest -q
 ```
 
-Run the end-to-end evaluation (requires the FAISS index and a valid `GROQ_API_KEY`):
+The unit tests are intended to run without a Groq API key or an embedding-model download.
+
+### End-to-end evaluation
+
+Build the index first and configure `GROQ_API_KEY`, then run:
 
 ```bash
 python scripts/evaluate_rag.py
 ```
 
-The script writes:
+The script generates:
 
-- `results/evaluation_results.csv` — per-question retrieval sources, generated answers, reference-fact coverage, abstention checks and timings; manual-review columns are blank until reviewed.
-- `results/evaluation_summary.json` — aggregate actual measurements from that run.
+- `results/evaluation_results.csv` — per-question results, retrieved sources, generated answers, reference-fact coverage, abstention checks, and timing information. Manual-review columns remain blank until reviewed.
+- `results/evaluation_summary.json` — aggregate measurements from that evaluation run.
 
-Review the outputs and fill `answer_relevance_manual_0_1`, `grounding_manual_0_1`, and reviewer notes in the CSV according to `docs/evaluation_report.md`. Preserve the baseline CSV before changing settings, then rerun the same test set to measure an improvement. Do not report results that were not measured.
+Review each generated answer against the expected answer and retrieved passages. Complete `answer_relevance_manual_0_1`, `grounding_manual_0_1`, and reviewer notes in the CSV as described in `docs/evaluation_report.md`.
+
+**Metric interpretation:** Retrieval hit rate measures whether expected source files were retrieved; reference-fact coverage is a simple text-based proxy; and an automated outcome/abstention rate is not semantic accuracy. Do not report manual review as complete until it has actually been performed. Preserve baseline results before changing settings if conducting a before/after experiment.
 
 ## Configuration
 
-| Variable | Default | Purpose |
+| Environment variable | Default | Purpose |
 |---|---|---|
 | `GROQ_API_KEY` | None | Required for generated answers |
-| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq chat model name; confirm availability in your account |
+| `GROQ_MODEL` | `llama-3.3-70b-versatile` | Groq chat model; verify that it is available to your account |
 | `EMBEDDING_MODEL` | `sentence-transformers/all-MiniLM-L6-v2` | Embedding model; rebuild the index if changed |
-| `MIN_RELEVANCE_SCORE` | `0.38` | Initial cosine-similarity threshold; validate against test data |
+| `MIN_RELEVANCE_SCORE` | `0.38` | Initial cosine-similarity threshold; validate using the test set |
 | `TOP_K` | `4` | Maximum number of chunks retrieved per question |
 
-The threshold is a starting configuration, not a proven universal value. Use the evaluation set to inspect false accepts and false abstentions before changing it. If the embedding model changes, rebuild the FAISS index with `python ingest.py`.
+The relevance threshold is a starting configuration, not a universally valid value. Inspect false accepts and false abstentions before tuning it. If the embedding model changes, rebuild the index with `python ingest.py`.
+
+## Deploy on Streamlit Community Cloud
+
+1. Push the repository to GitHub.
+2. Open [Streamlit Community Cloud](https://share.streamlit.io/) and sign in with GitHub.
+3. Create an app using repository `jobayertalha/Assesment_ninecube`, branch `main`, and main file `app.py`.
+4. In the app settings, add the API key under **Secrets**:
+
+   ```toml
+   GROQ_API_KEY = "your_actual_api_key"
+   ```
+
+5. Deploy and test the Home, AI Assistant, Evaluation, and Contact pages.
+
+**Deployment note:** `faiss_index/` is excluded from Git. The app's deployment must ensure the index is generated or otherwise available before the retriever is used. If deployment logs report a missing index, check the app's index-initialization logic and logs. Never commit API keys or other secrets.
 
 ## Project structure
 
@@ -117,32 +155,50 @@ The threshold is a starting configuration, not a proven universal value. Use the
 ├── requirements.txt
 ├── runtime.txt
 ├── .env.example
-├── .devcontainer/devcontainer.json
+├── .devcontainer/
+│   └── devcontainer.json
 ├── data/
-│   ├── knowledge_base/       # Synthetic Markdown business documents
+│   ├── knowledge_base/           # Synthetic Markdown business documents
 │   └── evaluation_questions.jsonl
-├── scripts/evaluate_rag.py
-├── tests/test_rag.py
-├── results/                  # Generated evaluation output; not committed by default
+├── scripts/
+│   └── evaluate_rag.py
+├── tests/
+│   └── test_rag.py
+├── results/                      # Generated evaluation outputs
 └── docs/
     ├── evaluation_report.md
     ├── demo_script.md
     └── technical_presentation_outline.md
 ```
 
-## Evaluation design
-
-The fixed test set includes factual questions, questions needing multiple facts, an ambiguous question and unanswerable questions. The evaluation report explains metrics, manual-review rubric, failure-case design and before/after experiment. See `docs/evaluation_report.md`.
+Generated evaluation outputs may be excluded from Git depending on the repository's ignore rules. Include the final reviewed results in the submission if required.
 
 ## Limitations and security
 
-- The knowledge base is small and synthetic; results do not establish production reliability.
-- The cosine threshold needs calibration against representative queries.
-- String-based reference-fact coverage may undercount paraphrases and does not detect every hallucination. Manual source-grounding review is required.
-- Generation latency depends on API/network conditions and model availability.
-- This proof of concept has no authentication, role-based access, audit log or production data-retention controls. Do not load confidential customer records. For a real deployment, use approved data handling, access control, secret management, logging safeguards and a representative security/privacy review.
-- The API provider receives the question and retrieved context needed to generate the answer; do not send confidential information without authorization.
+- **Small synthetic corpus:** Results do not establish production performance on a large or real business knowledge base.
+- **Threshold sensitivity:** The retrieval threshold needs calibration against representative queries.
+- **Approximate automated metrics:** Text-based reference-fact coverage can undercount paraphrases and does not detect every unsupported claim. Manual grounding review is necessary.
+- **External dependency:** Answer quality and latency depend on API availability, network conditions, and model behavior.
+- **No production access controls:** This proof of concept does not provide authentication, role-based access, audit logging, or production data-retention controls. Do not load confidential customer records.
+- **Data sent to the provider:** The LLM provider receives the question and retrieved context required to generate an answer. Do not send confidential information without authorization.
+- **Production hardening:** A real deployment should use approved data handling, access control, secret management, logging safeguards, monitoring, and a security/privacy review.
 
 ## Credits and external resources
 
-The application pattern is adapted from the author's own CareerVector repository, replacing CV/job matching with business-document question answering. The sample business data is synthetic. Core libraries are documented at [Streamlit](https://docs.streamlit.io/), [Sentence Transformers](https://www.sbert.net/), [FAISS](https://github.com/facebookresearch/faiss), and [Groq API documentation](https://console.groq.com/docs). No third-party dataset or external code snippets are bundled.
+The application pattern is adapted from the author's own CareerVector repository, with the use case changed from CV/job matching to business-document question answering. The SmartShop BD sample business data is synthetic. No third-party dataset is bundled.
+
+- [Streamlit documentation](https://docs.streamlit.io/)
+- [Sentence Transformers documentation](https://www.sbert.net/)
+- [FAISS repository](https://github.com/facebookresearch/faiss)
+- [Groq API documentation](https://console.groq.com/docs)
+
+## Assessment deliverables
+
+The project repository is intended to support the NineCube Digital assessment deliverables:
+
+1. Working prototype and setup documentation.
+2. Technical presentation covering the problem, architecture, implementation, evaluation, limitations, and next steps.
+3. Short screen recording or live walkthrough.
+4. Test questions, outputs, and evaluation findings.
+
+See `docs/evaluation_report.md` for the evaluation method, results, manual-review rubric, and remaining checks.
