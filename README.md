@@ -2,7 +2,7 @@
 
 A source-aware Retrieval-Augmented Generation (RAG) proof of concept for a fictional Bangladeshi retailer. The app retrieves relevant passages from a small Markdown knowledge base and uses an LLM to draft answers grounded in that evidence. When the available information is insufficient, it is designed to say so rather than guess.
 
-**Live demo:** [Open SmartShop BD](https://cahappnct7c5qsgfxt34uj3.streamlit.app/)  
+
 **Source code:** [GitHub repository](https://github.com/jobayertalha/Assesment_ninecube)
 
 > **Assessment data notice:** SmartShop BD, its products, prices, contact details, and policies are synthetic examples created for the NineCube Digital technical assessment. They do not describe a real business.
