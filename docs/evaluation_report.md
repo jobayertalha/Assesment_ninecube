@@ -35,18 +35,49 @@ Baseline: run the fixed set using the initial chunk size, top-k and relevance th
 
 ## Results
 
-Populate this section after running the evaluation:
+### Test run and environment
 
-- Test run date / environment: [fill in]
-- Retrieval Hit Rate@k: [from evaluation_summary.json]
-- Mean reference-fact coverage: [from evaluation_summary.json]
-- Correct abstention rate: [from evaluation_summary.json, then verify manually]
-- Mean / median latency: [from evaluation_summary.json]
-- Answer relevance rate from manual review: [calculate from CSV]
-- Factual grounding rate from manual review: [calculate from CSV]
-- Two actual failures or limitations: [cite question IDs and observed outputs]
-- Improvement and before/after evidence: [document measured comparison]
+- **Test set:** `data/evaluation_questions.jsonl`
+- **Test cases:** 12
+- **Configured retrieval top-k:** 4
+- **Runtime errors:** 0
+- **Environment:** Python 3.11.13 in GitHub Codespaces; results obtained using the configured embedding model and Groq API.
+- **Test run date:** 14 October 2026 (local date; confirm the actual run timestamp if recording a more precise date).
 
-## Limitations
+### Automated results
 
-This is a small synthetic-data proof of concept, not a production benchmark. The dataset is narrow; cosine-similarity thresholds depend on the embedding model and data; the simple reference-fact coverage check can miss paraphrases and may not detect every hallucination; latency depends on network/API conditions; and human review is needed for semantic relevance and factual grounding. Production deployment would require a larger representative evaluation set, access controls, privacy review, monitoring, and more robust document/version management.
+| Metric | Result |
+|---|---:|
+| Retrieval Hit Rate@4 | 100% |
+| Mean source-level Precision@4 | 43.75% |
+| Mean reference-fact coverage | 93.75% |
+| Automated correct-outcome rate | 100% (12/12) |
+| Unanswerable-question handling | 100% (3/3) |
+| Ambiguous-question handling | 100% (1/1) |
+| Mean end-to-end latency | 1.12 seconds |
+| Median end-to-end latency | 0.94 seconds |
+| Descriptive P95 latency | 2.70 seconds |
+| Runtime errors | 0 |
+
+The automated correct-outcome rate is based on the expected answerability labels and the assistant's abstention metadata. It should not be interpreted as a 100% semantic accuracy score. Retrieval Hit Rate@4 measures whether the expected source files appear in the retrieved results for answerable questions; it does not establish that every retrieved passage is relevant. Reference-fact coverage is based on normalized literal text matching.
+
+### Manual review
+
+Manual review should verify whether each response directly answers the question and whether its material factual claims are supported by the retrieved passages. The final answer-relevance and factual-grounding rates must be calculated from the completed manual-review columns in `results/evaluation_results.csv`.
+
+### Observed limitations
+
+1. **Retrieval precision:** The mean source-level Precision@4 is 43.75%. For example, Q01 and Q08 retrieve three source files although the expected source is `delivery_policy.md`. The expected source is present, but additional retrieved sources reduce precision under the current metric.
+2. **Reference-fact coverage:** Q04 has a reference-fact coverage score of 0.50 even though its response correctly gives the seven-calendar-day return window. This illustrates that literal matching may penalize concise answers or differences in how required facts are expressed. The response should be judged against the question and reference answer rather than this metric alone.
+
+The test set did not show a runtime failure or an incorrect automated abstention outcome. The missing wireless-charging and battery-capacity specifications were handled through abstention (Q09 and Q10), and the ambiguous question prompted clarification (Q11). These are successful test cases, not observed failures.
+
+### Improvement experiment
+
+The return-window retrieval issue was addressed with an explicit return-window statement in `warranty_returns.md` and a targeted evidence check in `agent.py`. In the latest run, Q04 returned the seven-calendar-day window instead of abstaining. The latest mean reference-fact coverage is 93.75%, and the mean latency is 1.12 seconds.
+
+These results demonstrate the behavior of the updated implementation. A rigorous before-and-after comparison requires preserved baseline and updated CSV files evaluated under comparable conditions. Without those artifacts, the results should not be presented as a controlled experiment proving that the change improved overall accuracy.
+
+### Limitations
+
+This evaluation uses only 12 questions over a small synthetic business knowledge base. Retrieval and latency measurements are sensitive to the question set, embedding model, relevance threshold, and external API conditions. Literal reference-fact coverage and source-level retrieval precision are proxies rather than complete semantic metrics. Human review is necessary to assess relevance and grounding. A production deployment would require a larger representative test set, access controls, privacy review, monitoring, and robust document/version management.

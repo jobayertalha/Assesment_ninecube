@@ -17,3 +17,12 @@ The warranty does not cover physical damage caused by misuse. For a specific cla
 Customers may contact support within **7 calendar days of delivery** if an item is unopened or arrived defective. To help the team review the request, email **support@smartshop.example** with the order number and a short description of the problem.
 
 A return request is reviewed by customer support; it is not automatically approved. This policy summary does not specify refund processing times or any restocking fee, so those details should be confirmed with support rather than assumed.
+
+
+## Return window and eligibility
+
+The return window is 7 calendar days from delivery. Customers may contact support within 7 calendar days of delivery if an item is unopened or arrived defective.
+
+To request a return, email support@smartshop.example with the order number and a short description of the problem.
+
+Every return request is reviewed by customer support and is not automatically approved. This policy summary does not specify refund processing times or any restocking fee, so those details should be confirmed with support rather than assumed.
