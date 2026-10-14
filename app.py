@@ -1,47 +1,33 @@
 import json
 import re
 from pathlib import Path
-
 import streamlit as st
 from agent import answer_question
 from rag import Retriever, INDEX_DIR
-
 ROOT = Path(__file__).resolve().parent
 SUMMARY_PATH = ROOT / "results" / "evaluation_summary.json"
 RESULTS_PATH = ROOT / "results" / "evaluation_results.csv"
-
-# Load the existing FAISS retriever once when the Streamlit app starts.
+# Cache the retriever and initialize it only when the AI Assistant page is opened.
 # This matches the backend signature: answer_question(question, retriever, ...).
 @st.cache_resource
 def load_retriever():
     retriever = Retriever()
     retriever.load(INDEX_DIR)
     return retriever
-
-try:
-    rag_retriever = load_retriever()
-    RETRIEVER_ERROR = None
-except Exception as exc:
-    rag_retriever = None
-    RETRIEVER_ERROR = f"{type(exc).__name__}: {exc}"
-
 st.set_page_config(page_title="SmartShop BD Assistant", page_icon="🛍️", layout="wide", initial_sidebar_state="collapsed")
-
 # Keep the entire Streamlit shell in light mode; CSS alone cannot override every
 # BaseWeb component (notably the fixed chat input) when the app theme is dark.
-
 BG, SURFACE, ALT = "#F7F2E8", "#FFFCF6", "#EFE6D6"
 INK, MUTED, ACCENT, ACCENT_DARK, BORDER = "#332D27", "#786E62", "#B79A72", "#8A704E", "#E3D7C5"
-
 st.markdown(f"""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
+@import url('https\://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
 .stApp {{background:{BG};color:{INK};font-family:'DM Sans',sans-serif}}
 [data-testid="stHeader"] {{background:{BG};height:0 !important;min-height:0 !important;padding:0 !important;margin:0 !important;display:none!important;}}
 [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu {{display:none!important;visibility:hidden!important;}}
 [data-testid="stAppViewContainer"], [data-testid="stMain"], [data-testid="stMainBlockContainer"] {{background:{BG};}}
 .block-container {{max-width:1180px;padding-top: .25rem;padding-bottom:5rem}}
-/* Hide Streamlit's floating top chrome; keep the app navbar fully visible. */
+/\* Hide Streamlit's floating top chrome; keep the app navbar fully visible. \*/
 div[data-testid="stHorizontalBlock"]:has(.brand) {{
   position: sticky; top: 0; z-index: 9999;
   background: {BG}; padding: .65rem 0 .75rem;
@@ -50,7 +36,7 @@ div[data-testid="stHorizontalBlock"]:has(.brand) {{
 div[data-testid="stHorizontalBlock"]:has(.brand) [data-testid="column"] {{
   background: {BG};
 }}
-/* Force the chat composer and its inner BaseWeb controls to match the beige theme. */
+/\* Force the chat composer and its inner BaseWeb controls to match the beige theme. \*/
 [data-testid="stChatInput"], [data-testid="stChatInput"] > div,
 [data-testid="stChatInput"] textarea, [data-baseweb="textarea"],
 [data-baseweb="textarea"] > div, [data-testid="stBottom"],
@@ -83,17 +69,13 @@ div[data-testid="stChatInput"] {{background:{SURFACE};border-color:{BORDER};bord
 [data-testid="stExpander"] {{background:{SURFACE};border:1px solid {BORDER};border-radius:12px}}
 a {{color:{ACCENT_DARK}!important}} footer {{visibility:hidden}}
 @media(max-width:700px) {{.block-container{{padding-left:1rem;padding-right:1rem}}.brand{{font-size:1.2rem}}}}
-
-
-/* compact top spacing */
+/\* compact top spacing \*/
 [data-testid="stAppViewBlockContainer"] {{ padding-top: 0rem !important; }}
 [data-testid="stHeader"] {{ height: 0rem !important; min-height: 0rem !important; padding: 0 !important; margin: 0 !important; }}
-
-/* compact layout below navbar */
+/\* compact layout below navbar \*/
 [data-testid="stVerticalBlock"] > [data-testid="stElementContainer"] {{ margin-bottom: .15rem; }}
 [data-testid="stMainBlockContainer"] {{ padding-top: 0rem !important; }}
-
-/* Collapse Streamlit divider whitespace — this is what caused the large gap */
+/\* Collapse Streamlit divider whitespace — this is what caused the large gap \*/
 hr, [data-testid="stDivider"], [data-testid="stDivider"] > div {{
   margin: 0 !important;
   padding: 0 !important;
@@ -102,22 +84,17 @@ hr {{
   border: none !important;
   border-top: 1px solid {BORDER} !important;
 }}
-
 </style>
 """, unsafe_allow_html=True)
-
 if "page" not in st.session_state: st.session_state.page = "Home"
 if "chat_messages" not in st.session_state: st.session_state.chat_messages = []
 PAGES = ["Home", "AI Assistant", "Evaluation", "Contact"]
-
 def navigate(page):
     st.session_state.page = page
     st.rerun()
-
 def clean_answer(text):
     """Remove model-emitted source tokens; source filenames are shown separately."""
     text = str(text or "")
-    # Common formats: [Source: file.md], 【Source: file.md】, 【file.md】, [file.md]
     patterns = [
         r"【\s*(?:source\s*:\s*)?[^】\n]*\.md\s*】",
         r"\[\s*(?:source\s*:\s*)?[^\]\n]*\.md\s*\]",
@@ -139,7 +116,6 @@ def show_sources(sources):
     if names:
         with st.expander(f"📚 Sources used · {len(names)}"):
             for name in names: st.markdown(f"- `{name}`")
-
 # Top navigation
 nav_brand, nav_pages, nav_note = st.columns([2, 4.5, 1.3], vertical_alignment="center")
 with nav_brand:
@@ -154,7 +130,6 @@ with nav_pages:
 with nav_note:
     st.markdown(f'<div style="text-align:right;color:{MUTED};font-size:.8rem">CUSTOMER CARE<br><b style="color:{INK}">Here to help</b></div>', unsafe_allow_html=True)
 st.divider()
-
 page = st.session_state.page
 if page == "Home":
     st.markdown("""<div class="hero"><div class="square"><h1>Reference answers.<br>Made easy.</h1><p>Meet the SmartShop BD Assistant. Ask about products, delivery, warranties, and returns—with answers grounded in our available information.</p></div>""", unsafe_allow_html=True)
@@ -179,8 +154,15 @@ if page == "Home":
     st.write("")
     if st.button("Chat with the assistant →", type="primary"):
         navigate("AI Assistant")
-
 elif page == "AI Assistant":
+    # Only initialize the retriever on the page that needs it.
+    try:
+        rag_retriever = load_retriever()
+        RETRIEVER_ERROR = None
+    except Exception as exc:
+        rag_retriever = None
+        RETRIEVER_ERROR = f"{type(exc).__name__}: {exc}"
+
     left, right = st.columns([4, 1], vertical_alignment="center")
     with left:
         st.markdown('<div class="eyebrow">SMARTSHOP BD · SUPPORT</div>', unsafe_allow_html=True)
@@ -243,7 +225,6 @@ elif page == "AI Assistant":
                         "sources": [],
                         "abstained": True,
                     })
-
 elif page == "Evaluation":
     st.markdown('<div class="eyebrow">QUALITY & TESTING</div>', unsafe_allow_html=True)
     eval_title, eval_actions = st.columns([3, 1], vertical_alignment="center")
@@ -302,7 +283,6 @@ elif page == "Evaluation":
                     st.dataframe(df[visible], use_container_width=True, hide_index=True)
                 except Exception:
                     st.caption("The saved CSV could not be displayed.")
-
 elif page == "Contact":
     st.markdown('<div class="eyebrow">CONTACT</div>', unsafe_allow_html=True)
     st.title("Let's connect.")
@@ -328,7 +308,7 @@ elif page == "Contact":
             st.markdown("**Phone**")
             st.markdown("[+880 1721 577792](tel:+8801721577792)")
             st.markdown("**LinkedIn**")
-            st.markdown("[linkedin.com/in/talha-jobayer](https://www.linkedin.com/in/talha-jobayer-696a74237/)")
+            st.markdown("[linkedin.com/in/talha-jobayer](https://www\.linkedin.com/in/talha-jobayer-696a74237/)")
             st.markdown("**GitHub**")
             st.markdown("[github.com/jobayertalha](https://github.com/jobayertalha)")
             st.markdown("**Portfolio**")
@@ -336,7 +316,6 @@ elif page == "Contact":
     st.info("This is a demonstration using a fictional SmartShop BD knowledge base.")
     st.markdown("### About this assistant")
     st.write("A retrieval-augmented question-answering prototype that answers from the available knowledge base and abstains when it cannot verify a detail.")
-
 st.divider()
 f1, f2 = st.columns([3, 2])
 with f1: st.caption("© SmartShop BD · AI Customer Assistant")
