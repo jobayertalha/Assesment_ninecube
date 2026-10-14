@@ -19,7 +19,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Warm beige visual theme.
+# Warm beige visual theme
 BG = "#F7F2E8"
 SURFACE = "#FFFCF6"
 ALT = "#EFE6D6"
@@ -34,10 +34,12 @@ st.markdown(
     <style>
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap');
     .stApp {{background:{BG}; color:{INK}; font-family:'DM Sans',sans-serif;}}
-    [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu, footer
-    {{visibility:hidden; height:0;}}
-    [data-testid="stAppViewContainer"], [data-testid="stMain"], [data-testid="stMainBlockContainer"]
-    {{background:{BG};}}
+    [data-testid="stHeader"], [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu, footer {{
+        visibility:hidden; height:0;
+    }}
+    [data-testid="stAppViewContainer"], [data-testid="stMain"], [data-testid="stMainBlockContainer"] {{
+        background:{BG};
+    }}
     .block-container {{max-width:1180px; padding-top:.5rem; padding-bottom:4rem;}}
     h1,h2,h3 {{color:{INK}; letter-spacing:-.02em;}}
     h1,h2 {{font-family:'Playfair Display',Georgia,serif;}}
@@ -73,7 +75,10 @@ st.markdown(
     [data-testid="stExpander"] {{background:{SURFACE}; border:1px solid {BORDER}; border-radius:12px;}}
     a {{color:{ACCENT_DARK}!important;}}
     hr {{border:none!important; border-top:1px solid {BORDER}!important; margin:.6rem 0!important;}}
-    @media(max-width:700px) {{.block-container{{padding-left:1rem;padding-right:1rem}} .brand{{font-size:1.2rem}}}}
+    @media(max-width:700px) {{
+        .block-container {{padding-left:1rem;padding-right:1rem;}}
+        .brand {{font-size:1.2rem;}}
+    }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -82,15 +87,8 @@ st.markdown(
 
 @st.cache_resource(show_spinner=False)
 def load_retriever():
-    """
-    Return one shared retriever per running Streamlit process.
-
-    If the FAISS files are absent (common on a fresh Streamlit Cloud instance),
-    build them from the Markdown knowledge base and save them automatically.
-    The cache prevents this work from repeating on normal Streamlit reruns.
-    """
+    """Load the saved FAISS index, or build it from the KB when absent."""
     retriever = Retriever()
-
     try:
         retriever.load(INDEX_DIR)
     except FileNotFoundError:
@@ -98,22 +96,20 @@ def load_retriever():
         chunks = build_chunks(documents)
         if not chunks:
             raise RuntimeError(
-                f"No knowledge-base chunks were found. Check the files in "
-                f"{ROOT / 'data' / 'knowledge_base'}."
+                f"No knowledge-base chunks found in {ROOT / 'data' / 'knowledge_base'}."
             )
         retriever.build(chunks)
         retriever.save(INDEX_DIR)
-
     return retriever
 
 
 def clean_answer(text):
-    """Remove common model-emitted source tokens and tidy whitespace."""
+    """Remove common source markers emitted by models and tidy whitespace."""
     text = str(text or "")
     patterns = [
-        r"【\s*(?:source\s*:\s*)?[^】\n]*?\.md\s*】",
-        r"\[\s*(?:source\s*:\s*)?[^\]\n]*?\.md\s*\]",
-        r"\(\s*(?:source\s*:\s*)?[^)\n]*?\.md\s*\)",
+        r"【\s*(?:source\s*:\s*)?[^】\n]*?\s*】",
+        r"\[\s*(?:source\s*:\s*)?[^\]\n]*?\s*\]",
+        r"\(\s*(?:source\s*:\s*)?[^)\n]*?\s*\)",
     ]
     for pattern in patterns:
         text = re.sub(pattern, "", text, flags=re.IGNORECASE)
@@ -172,8 +168,8 @@ with nav_note:
         f'<b style="color:{INK}">Here to help</b></div>',
         unsafe_allow_html=True,
     )
-st.divider()
 
+st.divider()
 page = st.session_state.page
 
 if page == "Home":
@@ -187,7 +183,6 @@ if page == "Home":
         """,
         unsafe_allow_html=True,
     )
-
     cols = st.columns(3, gap="medium")
     cards = [
         ("🛍️", "Product information", "Check listed prices, product details, and warranty periods."),
@@ -201,7 +196,6 @@ if page == "Home":
                 f'<div class="feature-title">{title}</div><div class="feature-copy">{desc}</div></div>',
                 unsafe_allow_html=True,
             )
-
     st.write("")
     st.markdown('<div class="section-label">TRY ASKING</div>', unsafe_allow_html=True)
     prompts = [
@@ -268,7 +262,6 @@ elif page == "AI Assistant":
                 st.session_state.pending_question = question_text
                 st.rerun()
 
-    # Render conversation history. The retriever is NOT initialized on every rerun.
     for message in st.session_state.chat_messages:
         with st.chat_message(
             message["role"],
@@ -291,8 +284,7 @@ elif page == "AI Assistant":
 
         with st.chat_message("assistant", avatar="🛍️"):
             try:
-                # The resource cache builds/loads the retriever only once per process.
-                # Suppress Streamlit's cache spinner; do not show a "loading retriever" message.
+                # Cached across reruns; the spinner appears only while answering.
                 retriever = load_retriever()
                 with st.spinner("Checking the available information…"):
                     result = answer_question(question, retriever)
@@ -314,9 +306,12 @@ elif page == "AI Assistant":
                     }
                 )
             except Exception as exc:
-                # Keep diagnostics useful but never print environment variables or secrets.
-                detail = f"{type(exc).__name__}: {str(exc)[:300]}"
-                st.error("The assistant couldn't complete this request. Please check the app configuration and logs.")
+                # Show a short diagnostic without exposing environment variables.
+                detail = f"{type(exc).__name__}: {str(exc)[:250]}"
+                st.error(
+                    "The assistant couldn't complete this request. "
+                    "Please try again shortly."
+                )
                 st.caption(f"Diagnostic: {detail}")
                 st.session_state.chat_messages.append(
                     {
