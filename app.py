@@ -150,7 +150,7 @@ with nav_note:
 st.divider()
 page = st.session_state.page
 if page == "Home":
-    st.markdown("""<div class="hero"><div class="square"><h1>Reference answers.<br>Made easy.</h1><p>Meet the SmartShop BD Assistant. Ask about products, delivery, warranties, and returns—with answers grounded in our available information.</p></div>""", unsafe_allow_html=True)
+    st.markdown("""<div class="hero"><div class="square"><h1>Reference answers.<br>Made easy.</h1><p>Meet the SmartShop BD Assistant. Ask about products, delivery, warranties, and returns and get answers grounded in our available information.</p></div>""", unsafe_allow_html=True)
     cols = st.columns(3, gap="medium")
     cards = [
         ("🛍️", "Product information", "Check listed prices, product details, and warranty periods."),
