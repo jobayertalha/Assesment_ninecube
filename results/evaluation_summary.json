@@ -1,0 +1,21 @@
+{
+  "test_count": 12,
+  "answerable_count": 8,
+  "unanswerable_count": 3,
+  "ambiguous_count": 1,
+  "retrieval_hit_rate_at_k": 1,
+  "mean_retrieval_precision_at_k_source_level": 0.4375,
+  "mean_reference_fact_coverage": 0.9375,
+  "correct_outcome_count": 12,
+  "overall_correct_outcome_rate": 1.0,
+  "correct_unanswerable_handling_count": 3,
+  "unanswerable_handling_rate": 1.0,
+  "correct_ambiguous_handling_count": 1,
+  "ambiguous_handling_rate": 1.0,
+  "mean_latency_seconds": 2.2565,
+  "median_latency_seconds": 0.7691,
+  "p95_latency_seconds_descriptive_small_sample": 7.7699,
+  "top_k": 4,
+  "note": "Reference-fact coverage is literal normalized text matching, not semantic correctness. Source-level retrieval precision does not measure ranking quality within a source. Correct outcome is based on the answerable/ambiguous labels and abstention metadata; manually review answer relevance and grounding in the CSV. Errors are treated as incorrect outcomes.",
+  "error_count": 0
+}

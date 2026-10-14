@@ -1,0 +1,23 @@
+id,category,question,answerable,ambiguous,expected_answer,expected_sources,retrieved_sources,retrieval_hit,retrieval_precision_at_k,answer,abstained,abstention_reason,correct_outcome,reference_fact_coverage,retrieval_seconds,generation_seconds,total_seconds,error,answer_relevance_manual_0_1,grounding_manual_0_1,reviewer_notes
+Q01,answerable_fact,What is the delivery fee outside Dhaka?,1,0,Delivery outside Dhaka costs BDT 120.,delivery_policy.md,company_overview.md;delivery_policy.md;faq.md,1,0.25,The delivery fee for orders outside Dhaka is **BDT 120**【Source: faq.md】【Source: delivery_policy.md】,0,answered,1,1.0,3.1163,0.6393,3.8006,,,,
+Q02,answerable_fact,What is the warranty period for the Nova A1 Smartphone?,1,0,The Nova A1 Smartphone has a 12-month manufacturer warranty.,warranty_returns.md,product_catalog.md;warranty_returns.md,1,0.5,The Nova A1 Smartphone comes with a **12‑month manufacturer warranty**【product_catalog.md】【warranty_returns.md】,0,answered,1,1.0,0.1891,0.6637,0.8734,,,,
+Q03,answerable_fact,How can I contact customer support?,1,0,Email support@smartshop.example or call 09610000000.,company_overview.md,company_overview.md;faq.md;warranty_returns.md,1,0.25,"You can reach SmartShop BD’s customer support by:
+
+* **Email:** support@smartshop.example  
+* **Phone:** 09610000000 (available Saturday‑Thursday, 9:00 AM – 6:00 PM Bangladesh time)  
+
+[Source: faq.md]  
+[Source: company_overview.md]",0,answered,1,1.0,0.0762,0.7592,0.8586,,,,
+Q04,answerable_fact,What is the return window?,1,0,Return requests can be made within 7 calendar days for unopened items or items that arrive defective.,warranty_returns.md,faq.md;product_catalog.md;warranty_returns.md,1,0.5,The return window is 7 calendar days from delivery. [Source: warranty_returns.md],0,answered,1,0.5,0.0153,0.6288,0.6634,,,,
+Q05,answerable_fact,What is the price of the Nova A1 Smartphone?,1,0,"The Nova A1 Smartphone costs BDT 18,500.",product_catalog.md,faq.md;product_catalog.md;warranty_returns.md,1,0.5,"The Nova A1 Smartphone is listed at **BDT 18,500**【Source: product_catalog.md】.",0,answered,1,1.0,0.0196,0.6195,0.6796,,,,
+Q06,answerable_fact,How long does delivery take within Dhaka?,1,0,Estimated delivery within Dhaka is 1–2 business days.,delivery_policy.md,company_overview.md;delivery_policy.md;faq.md,1,0.25,Delivery within Dhaka is estimated to take **1–2 business days**. [Source: delivery_policy.md],0,answered,1,1.0,0.0147,0.4708,0.5047,,,,
+Q07,multi_fact,What is the price and warranty of the Nova A1 Smartphone?,1,0,"The Nova A1 costs BDT 18,500 and has a 12-month manufacturer warranty.",product_catalog.md;warranty_returns.md,product_catalog.md;warranty_returns.md,1,1.0,"- **Price:** BDT 18,500【Source: product_catalog.md】  
+- **Warranty:** 12 months from the manufacturer【Source: product_catalog.md】【Source: warranty_returns.md】",0,answered,1,1.0,0.0176,0.5097,0.5468,,,,
+Q08,multi_fact,What are the delivery fee and estimated delivery time outside Dhaka?,1,0,Delivery outside Dhaka costs BDT 120 and is estimated to take 3–5 business days.,delivery_policy.md,company_overview.md;delivery_policy.md;faq.md,1,0.25,"The delivery fee for orders outside Dhaka is **BDT 120**, and the estimated delivery time is **3–5 business days**【Source: delivery_policy.md】.",0,answered,1,1.0,0.0165,0.605,0.6411,,,,
+Q09,unknown_information,Does the EchoBuds Lite support wireless charging?,0,0,The knowledge base does not specify whether EchoBuds Lite supports wireless charging; the assistant should abstain.,,delivery_policy.md;product_catalog.md;warranty_returns.md,,,"The catalogue does not provide information about whether the EchoBuds Lite supports wireless charging. It advises confirming that specification with support if it matters to your purchase.  
+
+[Source: product_catalog.md]",1,generation_abstention,1,,0.4377,3.7378,4.1952,,,,
+Q10,unknown_information,What is the battery capacity of the EchoBuds Lite?,0,0,The battery capacity is not listed in the available knowledge base; the assistant should abstain.,,delivery_policy.md;product_catalog.md;warranty_returns.md,,,"I could not find that information in the available knowledge base.  
+[Source: product_catalog.md]",1,generation_abstention,1,,0.018,7.7325,7.7699,,,,
+Q11,ambiguous,How much does it cost?,0,1,Ask which product or service the user means.,,,,,Which product or service are you asking about?,1,ambiguous_question,1,,0.0,0.0,0.0,,,,
+Q12,out_of_scope,Who won the latest international football tournament?,0,0,Explain that the available knowledge base does not contain that information.,,company_overview.md;faq.md;warranty_returns.md,,,I could not find that information in the available knowledge base.,1,generation_abstention,1,,0.0161,6.5093,6.5445,,,,
