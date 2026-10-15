@@ -240,3 +240,14 @@ The application pattern is adapted from the author's CareerVector repository, wi
 | Task 4 — Engineering & Documentation | Source code, setup instructions, dependencies, and tests |
 
 **Final submission:** GitHub repository, 5–8-slide technical presentation, screen recording, and evaluation evidence.
+
+## 10. Assessment Guidelines & Implementation Scope
+
+- **Technology selection:** Python, Streamlit, Sentence Transformers, FAISS, and Groq were selected to build a lightweight RAG prototype without unnecessary infrastructure.
+- **Data privacy:** The knowledge base contains synthetic business information created for this assessment. No confidential personal or business data is included.
+- **Implemented features:** Markdown document ingestion, chunking, embedding generation, FAISS retrieval, Groq-based answer generation, basic abstention handling, Streamlit interface, evaluation scripts, and unit tests.
+- **Planned improvements:** Better retrieval ranking, broader evaluation coverage, stronger factual-grounding checks, latency optimization, and production-grade security controls. These are proposed improvements, not implemented features.
+- **Code attribution:** The RAG implementation was adapted from my own earlier project, [rag_app](https://github.com/jobayertalha/rag_app). Relevant retrieval and generation logic was reused and adapted for the SmartShop BD business question-answering use case.
+- **External resources:** The libraries and service documentation used by this project are listed in the Credits section.
+
+The project prioritizes implementation quality, reproducibility, and transparent evaluation over unnecessary architectural complexity.
